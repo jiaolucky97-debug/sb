@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WeatherCondition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">WeatherCondition.java</span></div><h1>WeatherCondition.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+public class WeatherCondition {
+    private String weather; // e.g., &quot;Clear&quot;, &quot;Rainy&quot;, &quot;Snowy&quot;
+
+<span class="fc" id="L6">    public WeatherCondition(String weather) {</span>
+<span class="fc" id="L7">        this.weather = weather;</span>
+<span class="fc" id="L8">    }</span>
+
+    public double adjustWeightForWeather(double originalWeight, Node node) {
+<span class="fc bfc" id="L11" title="All 4 branches covered.">        switch (weather) {</span>
+            case &quot;Rainy&quot;:
+<span class="fc" id="L13">                return originalWeight * 1.5; // Increase weight by 50% in rainy weather</span>
+            case &quot;Snowy&quot;:
+<span class="fc" id="L15">                return originalWeight * 2.0; // Double weight in snowy weather</span>
+            case &quot;Stormy&quot;:
+<span class="fc" id="L17">                return originalWeight * 3.0; // Higher weight in stormy weather</span>
+            default:
+<span class="fc" id="L19">                return originalWeight; // No adjustment in clear or default weather</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

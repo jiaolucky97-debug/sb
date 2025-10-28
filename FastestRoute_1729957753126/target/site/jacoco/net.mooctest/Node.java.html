@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Node.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">Node.java</span></div><h1>Node.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class Node {
+    private int nodeId;
+    private boolean isObstacle;
+    private List&lt;Edge&gt; neighbors; // Adjacent nodes and distances
+    private String roadType; // Type of road (e.g., highway, regular road, toll road)
+    private boolean tollRoad; // Indicates if it is a toll road
+    private boolean restrictedForHeavyVehicles; // Indicates if it restricts heavy vehicles
+    private boolean highRiskArea; // Indicates if it is a high-risk area
+    private double costPerKm; // Fuel or energy cost per kilometer
+    private int openTime;  // Road open start time (in hours)
+    private int closeTime; // Road close time
+
+    public Node(int nodeId, boolean isObstacle, String roadType, boolean tollRoad,
+                boolean restrictedForHeavyVehicles, boolean highRiskArea,
+<span class="fc" id="L20">                double costPerKm, int openTime, int closeTime) {</span>
+<span class="fc" id="L21">        this.nodeId = nodeId;</span>
+<span class="fc" id="L22">        this.isObstacle = isObstacle;</span>
+<span class="fc" id="L23">        this.roadType = roadType;</span>
+<span class="fc" id="L24">        this.tollRoad = tollRoad;</span>
+<span class="fc" id="L25">        this.restrictedForHeavyVehicles = restrictedForHeavyVehicles;</span>
+<span class="fc" id="L26">        this.highRiskArea = highRiskArea;</span>
+<span class="fc" id="L27">        this.costPerKm = costPerKm;</span>
+<span class="fc" id="L28">        this.openTime = openTime;</span>
+<span class="fc" id="L29">        this.closeTime = closeTime;</span>
+<span class="fc" id="L30">        this.neighbors = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L31">    }</span>
+
+    public int getNodeId() {
+<span class="fc" id="L34">        return nodeId;</span>
+    }
+
+    public boolean isObstacle() {
+<span class="fc" id="L38">        return isObstacle;</span>
+    }
+
+    public List&lt;Edge&gt; getNeighbors() {
+<span class="fc" id="L42">        return neighbors;</span>
+    }
+
+    public String getRoadType() {
+<span class="fc" id="L46">        return roadType;</span>
+    }
+
+    public boolean isTollRoad() {
+<span class="fc" id="L50">        return tollRoad;</span>
+    }
+
+    public boolean isRestrictedForHeavyVehicles() {
+<span class="fc" id="L54">        return restrictedForHeavyVehicles;</span>
+    }
+
+    public boolean isHighRiskArea() {
+<span class="fc" id="L58">        return highRiskArea;</span>
+    }
+
+    public double getCostPerKm() {
+<span class="fc" id="L62">        return costPerKm;</span>
+    }
+
+    public boolean isOpenAt(int currentTime) {
+<span class="fc bfc" id="L66" title="All 4 branches covered.">        return currentTime &gt;= openTime &amp;&amp; currentTime &lt;= closeTime;</span>
+    }
+
+    public void addNeighbor(Node neighbor, double distance) {
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        if (!neighbor.isObstacle()) {</span>
+<span class="fc" id="L71">            this.neighbors.add(new Edge(neighbor, distance));</span>
+        }
+<span class="fc" id="L73">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
