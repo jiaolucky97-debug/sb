@@ -386,6 +386,72 @@ public class ElevatorManagerTest {
     }
 
     @Test(timeout = 4000)
+    public void testElevatorMoveHandlesUpwardJourney() throws InterruptedException {
+        // 验证上行移动时的能耗、目标层处理与状态变化
+        StubScheduler scheduler = new StubScheduler();
+        Elevator elevator = new Elevator(22, scheduler);
+        scheduler.attach(elevator);
+        elevator.setCurrentFloor(2);
+        elevator.setDirection(Direction.UP);
+        elevator.getDestinationSet().add(3);
+        elevator.getDestinationSet().add(4);
+        double baseEnergy = elevator.getEnergyConsumption();
+
+        elevator.move();
+        assertEquals(3, elevator.getCurrentFloor());
+        assertEquals(baseEnergy + 1.0, elevator.getEnergyConsumption(), 0.001);
+        assertFalse(elevator.getDestinationSet().contains(3));
+        assertTrue(elevator.getDestinationSet().contains(4));
+        assertEquals(ElevatorStatus.STOPPED, elevator.getStatus());
+
+        elevator.move();
+        assertEquals(4, elevator.getCurrentFloor());
+        assertEquals(baseEnergy + 2.0, elevator.getEnergyConsumption(), 0.001);
+        assertTrue(elevator.getDestinationSet().isEmpty());
+        assertEquals(ElevatorStatus.IDLE, elevator.getStatus());
+    }
+
+    @Test(timeout = 4000)
+    public void testElevatorMoveDescendingBranch() throws InterruptedException {
+        // 验证下行移动时能保持正确方向与继续运行状态
+        StubScheduler scheduler = new StubScheduler();
+        Elevator elevator = new Elevator(23, scheduler);
+        scheduler.attach(elevator);
+        elevator.setCurrentFloor(5);
+        elevator.setDirection(Direction.DOWN);
+        elevator.getDestinationSet().add(1);
+        double baseEnergy = elevator.getEnergyConsumption();
+
+        elevator.move();
+        assertEquals(4, elevator.getCurrentFloor());
+        assertEquals(baseEnergy + 1.0, elevator.getEnergyConsumption(), 0.001);
+        assertEquals(Direction.DOWN, elevator.getDirection());
+        assertEquals(ElevatorStatus.MOVING, elevator.getStatus());
+        assertTrue(elevator.getDestinationSet().contains(1));
+    }
+
+    @Test(timeout = 4000)
+    public void testElevatorAddDestination() {
+        // 验证添加目的楼层会在集合中体现
+        Elevator elevator = new Elevator(24, null);
+        elevator.addDestination(6);
+        assertTrue(elevator.getDestinationSet().contains(6));
+    }
+
+    @Test(timeout = 4000)
+    public void testElevatorMoveToFirstFloor() throws InterruptedException {
+        // 验证紧急返回首层时的能耗与状态
+        Elevator elevator = new Elevator(25, null);
+        elevator.setCurrentFloor(3);
+        elevator.setDirection(Direction.DOWN);
+        double baseEnergy = elevator.getEnergyConsumption();
+        elevator.moveToFirstFloor();
+        assertEquals(1, elevator.getCurrentFloor());
+        assertEquals(baseEnergy + 2.0, elevator.getEnergyConsumption(), 0.001);
+        assertEquals(ElevatorStatus.IDLE, elevator.getStatus());
+    }
+
+    @Test(timeout = 4000)
     public void testNearestElevatorStrategySelection() {
         // 验证最近电梯策略能够筛选合适电梯
         NearestElevatorStrategy strategy = new NearestElevatorStrategy();
@@ -526,6 +592,26 @@ public class ElevatorManagerTest {
         RecordingScheduler scheduler = new RecordingScheduler(elevators);
         scheduler.executeEmergencyProtocol();
         assertTrue(elevator.isEmergencyHandled());
+    }
+
+    @Test(timeout = 4000)
+    public void testSchedulerSetDispatchStrategy() {
+        // 验证更换调度策略后能够选择新的电梯
+        Elevator candidate = new Elevator(26, null);
+        candidate.setStatus(ElevatorStatus.IDLE);
+        List<Elevator> elevators = new ArrayList<>();
+        elevators.add(candidate);
+        DispatchStrategy initial = (list, req) -> null;
+        Scheduler scheduler = new Scheduler(elevators, 5, initial);
+        PassengerRequest request = new PassengerRequest(1, 3, Priority.MEDIUM, RequestType.STANDARD);
+
+        scheduler.dispatchElevator(request);
+        assertTrue(candidate.getDestinationSet().isEmpty());
+
+        DispatchStrategy updated = (list, req) -> list.get(0);
+        scheduler.setDispatchStrategy(updated);
+        scheduler.dispatchElevator(request);
+        assertTrue(candidate.getDestinationSet().contains(1));
     }
 
     @Test(timeout = 4000)
