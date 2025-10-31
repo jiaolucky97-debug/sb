@@ -347,7 +347,7 @@ public class ElevatorManagerTest {
         SystemConfig config = SystemConfig.getInstance();
         config.setMaxLoad(210.0);
         StubScheduler scheduler = new StubScheduler();
-        Elevator elevator = new Elevator(4, scheduler);
+        EmergencyAwareElevator elevator = new EmergencyAwareElevator(4, scheduler);
         scheduler.attach(elevator);
         scheduler.setRequests(1, Direction.UP, Arrays.asList(
                 new PassengerRequest(1, 5, Priority.HIGH, RequestType.STANDARD)
@@ -356,15 +356,13 @@ public class ElevatorManagerTest {
         elevator.setDirection(Direction.UP);
         elevator.loadPassengers();
 
-        final Object[] observed = new Object[1];
-        elevator.addObserver((o, arg) -> observed[0] = arg);
         elevator.handleEmergency();
 
         assertEquals(ElevatorStatus.EMERGENCY, elevator.getStatus());
         assertTrue(elevator.getPassengerList().isEmpty());
         assertEquals(1, elevator.getDestinationSet().size());
         assertTrue(elevator.getDestinationSet().contains(1));
-        assertEquals(ElevatorStatus.EMERGENCY, observed[0]);
+        assertEquals(ElevatorStatus.EMERGENCY, elevator.getLastNotified());
     }
 
     @Test(timeout = 4000)
@@ -440,28 +438,27 @@ public class ElevatorManagerTest {
         EnergySavingStrategy strategy = new EnergySavingStrategy();
         PassengerRequest request = new PassengerRequest(4, 7, Priority.LOW, RequestType.STANDARD);
 
-        Elevator idleElevator = new Elevator(11, null);
-        idleElevator.setStatus(ElevatorStatus.IDLE);
+        StrategyElevator idleElevator = new StrategyElevator(11, ElevatorStatus.IDLE, Direction.UP, 1);
+        StrategyElevator movingCandidate = new StrategyElevator(12, ElevatorStatus.MOVING, Direction.UP, 2);
+        StrategyElevator farElevator = new StrategyElevator(13, ElevatorStatus.MOVING, Direction.UP, 10);
 
-        Elevator movingCandidate = new Elevator(12, null);
-        movingCandidate.setStatus(ElevatorStatus.MOVING);
-        movingCandidate.setDirection(Direction.UP);
-        movingCandidate.setCurrentFloor(2);
-
-        Elevator farElevator = new Elevator(13, null);
-        farElevator.setStatus(ElevatorStatus.MOVING);
-        farElevator.setDirection(Direction.UP);
-        farElevator.setCurrentFloor(10);
-
-        Elevator result = strategy.selectElevator(Arrays.asList(idleElevator, movingCandidate, farElevator), request);
+        List<Elevator> elevators = new ArrayList<>();
+        elevators.add(idleElevator);
+        elevators.add(movingCandidate);
+        elevators.add(farElevator);
+        Elevator result = strategy.selectElevator(elevators, request);
         assertSame(idleElevator, result);
 
         idleElevator.setStatus(ElevatorStatus.MOVING);
-        result = strategy.selectElevator(Arrays.asList(idleElevator, movingCandidate), request);
+        List<Elevator> secondGroup = new ArrayList<>();
+        secondGroup.add(idleElevator);
+        secondGroup.add(movingCandidate);
+        result = strategy.selectElevator(secondGroup, request);
         assertSame(movingCandidate, result);
 
-        result = strategy.selectElevator(Arrays.asList(farElevator), request);
-        assertNull(result);
+        List<Elevator> finalGroup = new ArrayList<>();
+        finalGroup.add(farElevator);
+        assertNull(strategy.selectElevator(finalGroup, request));
     }
 
     @Test(timeout = 4000)
@@ -614,6 +611,72 @@ public class ElevatorManagerTest {
 
         ExecutorService executor = (ExecutorService) findField(SecurityMonitor.class, "executorService").get(monitor);
         executor.shutdownNow();
+    }
+
+    private static class StrategyElevator extends Elevator {
+        private ElevatorStatus status;
+        private Direction direction;
+        private int floor;
+
+        StrategyElevator(int id, ElevatorStatus status, Direction direction, int floor) {
+            super(id, null);
+            this.status = status;
+            this.direction = direction;
+            this.floor = floor;
+            super.setStatus(status);
+            super.setDirection(direction);
+            super.setCurrentFloor(floor);
+        }
+
+        @Override
+        public ElevatorStatus getStatus() {
+            return status;
+        }
+
+        @Override
+        public Direction getDirection() {
+            return direction;
+        }
+
+        @Override
+        public int getCurrentFloor() {
+            return floor;
+        }
+
+        @Override
+        public void setStatus(ElevatorStatus status) {
+            super.setStatus(status);
+            this.status = status;
+        }
+
+        @Override
+        public void setDirection(Direction direction) {
+            super.setDirection(direction);
+            this.direction = direction;
+        }
+
+        @Override
+        public void setCurrentFloor(int currentFloor) {
+            super.setCurrentFloor(currentFloor);
+            this.floor = currentFloor;
+        }
+    }
+
+    private static class EmergencyAwareElevator extends Elevator {
+        private Object lastNotified;
+
+        EmergencyAwareElevator(int id, Scheduler scheduler) {
+            super(id, scheduler);
+        }
+
+        @Override
+        public void notifyObservers(Object arg) {
+            lastNotified = arg;
+        }
+
+        Object getLastNotified() {
+            return lastNotified;
+        }
     }
 
     private static class StubScheduler extends Scheduler {
