@@ -452,6 +452,16 @@ public class ElevatorManagerTest {
     }
 
     @Test(timeout = 4000)
+    public void testElevatorUpdateDirectionEqualFloor() {
+        // 验证更新方向时当目标层等于当前层会转为向下
+        Elevator elevator = new Elevator(26, null);
+        elevator.setCurrentFloor(5);
+        elevator.getDestinationSet().add(5);
+        elevator.updateDirection();
+        assertEquals(Direction.DOWN, elevator.getDirection());
+    }
+
+    @Test(timeout = 4000)
     public void testNearestElevatorStrategySelection() {
         // 验证最近电梯策略能够筛选合适电梯
         NearestElevatorStrategy strategy = new NearestElevatorStrategy();
@@ -556,6 +566,7 @@ public class ElevatorManagerTest {
         Field highPriorityField = findField(Scheduler.class, "highPriorityQueue");
         Queue<?> queue = (Queue<?>) highPriorityField.get(scheduler);
         assertEquals(1, queue.size());
+        assertSame(high, queue.peek());
         assertTrue(elevator.getDestinationSet().contains(high.getStartFloor()));
 
         PassengerRequest normal = new PassengerRequest(4, 1, Priority.LOW, RequestType.STANDARD);
@@ -615,13 +626,37 @@ public class ElevatorManagerTest {
     }
 
     @Test(timeout = 4000)
+    public void testSchedulerDispatchNoAvailableElevator() {
+        // 验证当无可用电梯时会输出提示并不修改任何电梯
+        Scheduler scheduler = new Scheduler(new ArrayList<>(), 6, (list, req) -> null);
+        PassengerRequest request = new PassengerRequest(2, 4, Priority.LOW, RequestType.STANDARD);
+        PrintStream original = System.out;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        try {
+            scheduler.dispatchElevator(request);
+        } finally {
+            System.setOut(original);
+        }
+        assertTrue(out.toString().contains("No available elevators"));
+    }
+
+    @Test(timeout = 4000)
     public void testMaintenanceManagerOnEventAndRecords() throws Exception {
         // 验证维修管理在接收到故障事件后能够记录任务
         TestMaintenanceManager manager = new TestMaintenanceManager();
         Elevator elevator = new Elevator(19, null);
-        manager.onEvent(new EventBus.Event(EventType.ELEVATOR_FAULT, elevator));
+        PrintStream original = System.out;
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        try {
+            manager.onEvent(new EventBus.Event(EventType.ELEVATOR_FAULT, elevator));
+        } finally {
+            System.setOut(original);
+        }
         Queue<?> taskQueue = (Queue<?>) findField(MaintenanceManager.class, "taskQueue").get(manager);
         assertEquals(1, taskQueue.size());
+        assertTrue(out.toString().contains("Maintenance required for Elevator 19"));
 
         manager.recordMaintenanceResult(19, "完成");
         List<?> records = (List<?>) findField(MaintenanceManager.class, "maintenanceRecords").get(manager);
@@ -632,6 +667,33 @@ public class ElevatorManagerTest {
 
         ExecutorService executor = (ExecutorService) findField(MaintenanceManager.class, "executorService").get(manager);
         executor.shutdownNow();
+    }
+
+    @Test(timeout = 4000)
+    public void testMaintenanceManagerIgnoresNonFaultEvent() throws Exception {
+        // 验证非故障事件不会触发维修任务
+        TestMaintenanceManager manager = new TestMaintenanceManager();
+        manager.onEvent(new EventBus.Event(EventType.EMERGENCY, new Elevator(28, null)));
+        Queue<?> taskQueue = (Queue<?>) findField(MaintenanceManager.class, "taskQueue").get(manager);
+        assertTrue(taskQueue.isEmpty());
+        ExecutorService executor = (ExecutorService) findField(MaintenanceManager.class, "executorService").get(manager);
+        executor.shutdownNow();
+    }
+
+    @Test(timeout = 4000)
+    public void testMaintenanceManagerProcessTasksExecutes() throws Exception {
+        // 验证任务处理循环能够取出队列并记录维护结果
+        SingleRunMaintenanceManager manager = new SingleRunMaintenanceManager();
+        manager.awaitStart();
+        Elevator elevator = new Elevator(29, null);
+        manager.scheduleMaintenance(elevator);
+        manager.awaitProcessed();
+        assertTrue(manager.getProcessedElevators().contains(29));
+        Queue<?> taskQueue = (Queue<?>) findField(MaintenanceManager.class, "taskQueue").get(manager);
+        assertTrue(taskQueue.isEmpty());
+        List<?> records = (List<?>) findField(MaintenanceManager.class, "maintenanceRecords").get(manager);
+        assertFalse(records.isEmpty());
+        manager.shutdownExecutor();
     }
 
     @Test(timeout = 4000)
@@ -869,6 +931,71 @@ public class ElevatorManagerTest {
         @Override
         public void processTasks() {
             // 覆盖父类逻辑以避免后台线程无限循环
+        }
+    }
+
+    private static class SingleRunMaintenanceManager extends MaintenanceManager {
+        private final CountDownLatch started = new CountDownLatch(1);
+        private final CountDownLatch processed = new CountDownLatch(1);
+        private final List<Integer> processedElevators = new ArrayList<>();
+
+        @Override
+        public void processTasks() {
+            started.countDown();
+            while (!Thread.currentThread().isInterrupted()) {
+                MaintenanceTask task = pollTask();
+                if (task != null) {
+                    processedElevators.add(task.getElevatorId());
+                    super.performMaintenance(task);
+                    processed.countDown();
+                    return;
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            }
+        }
+
+        private MaintenanceTask pollTask() {
+            Queue<MaintenanceTask> queue = taskQueue();
+            return queue.poll();
+        }
+
+        @SuppressWarnings("unchecked")
+        private Queue<MaintenanceTask> taskQueue() {
+            try {
+                Field field = MaintenanceManager.class.getDeclaredField("taskQueue");
+                field.setAccessible(true);
+                return (Queue<MaintenanceTask>) field.get(this);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        void awaitStart() throws InterruptedException {
+            started.await(1, TimeUnit.SECONDS);
+        }
+
+        void awaitProcessed() throws InterruptedException {
+            processed.await(2, TimeUnit.SECONDS);
+        }
+
+        List<Integer> getProcessedElevators() {
+            return processedElevators;
+        }
+
+        void shutdownExecutor() throws Exception {
+            ExecutorService executor = executorService();
+            executor.shutdownNow();
+        }
+
+        private ExecutorService executorService() throws Exception {
+            Field field = MaintenanceManager.class.getDeclaredField("executorService");
+            field.setAccessible(true);
+            return (ExecutorService) field.get(this);
         }
     }
 }
