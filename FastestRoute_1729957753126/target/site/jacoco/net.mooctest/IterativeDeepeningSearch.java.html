@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IterativeDeepeningSearch.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">IterativeDeepeningSearch.java</span></div><h1>IterativeDeepeningSearch.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+public class IterativeDeepeningSearch extends SearchAlgorithm {
+
+    private int maxDepth;
+
+    public IterativeDeepeningSearch(Graph graph, Node startNode, Node endNode, Vehicle vehicle,
+                                    TrafficCondition trafficCondition, WeatherCondition weatherCondition, int currentTime, int maxDepth) {
+<span class="fc" id="L11">        super(graph, startNode, endNode, vehicle, trafficCondition, weatherCondition, currentTime);</span>
+<span class="fc" id="L12">        this.maxDepth = maxDepth;</span>
+<span class="fc" id="L13">    }</span>
+
+    @Override
+    public PathResult findPath() {
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        for (int depth = 0; depth &lt;= maxDepth; depth++) {</span>
+<span class="fc" id="L18">            PathResult result = depthLimitedSearch(startNode, endNode, depth, new HashSet&lt;&gt;());</span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">            if (result != null) {</span>
+<span class="fc" id="L20">                return result;</span>
+            }
+        }
+<span class="fc" id="L23">        return null; // No feasible path found</span>
+    }
+
+    public PathResult depthLimitedSearch(Node current, Node goal, int depth, Set&lt;Node&gt; visited) {
+<span class="fc bfc" id="L27" title="All 4 branches covered.">        if (depth == 0 &amp;&amp; current.equals(goal)) {</span>
+<span class="fc" id="L28">            return new PathResult(Collections.singletonList(current));</span>
+        }
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (depth &gt; 0) {</span>
+<span class="fc" id="L31">            visited.add(current);</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            for (Edge edge : current.getNeighbors()) {</span>
+<span class="fc" id="L33">                Node neighbor = edge.getNeighbor();</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">                if (!visited.contains(neighbor)) {</span>
+<span class="fc" id="L35">                    PathResult result = depthLimitedSearch(neighbor, goal, depth - 1, visited);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                    if (result != null) {</span>
+<span class="fc" id="L37">                        List&lt;Node&gt; path = new ArrayList&lt;&gt;(result.getPath());</span>
+<span class="fc" id="L38">                        path.add(0, current);</span>
+<span class="fc" id="L39">                        return new PathResult(path);</span>
+                    }
+                }
+<span class="fc" id="L42">            }</span>
+<span class="fc" id="L43">            visited.remove(current);</span>
+        }
+<span class="fc" id="L45">        return null;</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

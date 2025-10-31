@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BellmanFord.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">BellmanFord.java</span></div><h1>BellmanFord.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+public class BellmanFord extends SearchAlgorithm {
+
+    public BellmanFord(Graph graph, Node startNode, Node endNode, Vehicle vehicle,
+                       TrafficCondition trafficCondition, WeatherCondition weatherCondition, int currentTime) {
+<span class="fc" id="L9">        super(graph, startNode, endNode, vehicle, trafficCondition, weatherCondition, currentTime);</span>
+<span class="fc" id="L10">    }</span>
+
+    @Override
+    public PathResult findPath() {
+<span class="fc" id="L14">        Map&lt;Node, Double&gt; distances = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L15">        Map&lt;Node, Node&gt; predecessors = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L17" title="All 2 branches covered.">        for (Node node : graph.getNodes().values()) {</span>
+<span class="fc" id="L18">            distances.put(node, Double.MAX_VALUE);</span>
+<span class="fc" id="L19">        }</span>
+<span class="fc" id="L20">        distances.put(startNode, 0.0);</span>
+
+<span class="fc" id="L22">        int V = graph.getNodes().size();</span>
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        for (int i = 1; i &lt;= V - 1; i++) {</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">            for (Node currentNode : graph.getNodes().values()) {</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">                for (Edge edge : currentNode.getNeighbors()) {</span>
+<span class="fc" id="L26">                    Node neighbor = edge.getNeighbor();</span>
+<span class="fc" id="L27">                    double originalDistance = edge.getDistance();</span>
+<span class="fc" id="L28">                    double adjustedDistance = trafficCondition.adjustWeight(originalDistance, neighbor.getNodeId());</span>
+<span class="fc" id="L29">                    adjustedDistance = weatherCondition.adjustWeightForWeather(adjustedDistance, neighbor);</span>
+
+<span class="pc bpc" id="L31" title="1 of 4 branches missed.">                    if (distances.get(currentNode) != Double.MAX_VALUE &amp;&amp; distances.get(currentNode) + adjustedDistance &lt; distances.get(neighbor)) {</span>
+<span class="fc" id="L32">                        distances.put(neighbor, distances.get(currentNode) + adjustedDistance);</span>
+<span class="fc" id="L33">                        predecessors.put(neighbor, currentNode);</span>
+                    }
+<span class="fc" id="L35">                }</span>
+<span class="fc" id="L36">            }</span>
+        }
+
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (Node currentNode : graph.getNodes().values()) {</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            for (Edge edge : currentNode.getNeighbors()) {</span>
+<span class="fc" id="L41">                Node neighbor = edge.getNeighbor();</span>
+<span class="fc" id="L42">                double originalDistance = edge.getDistance();</span>
+<span class="fc" id="L43">                double adjustedDistance = trafficCondition.adjustWeight(originalDistance, neighbor.getNodeId());</span>
+<span class="fc" id="L44">                adjustedDistance = weatherCondition.adjustWeightForWeather(adjustedDistance, neighbor);</span>
+
+<span class="pc bpc" id="L46" title="1 of 4 branches missed.">                if (distances.get(currentNode) != Double.MAX_VALUE &amp;&amp; distances.get(currentNode) + adjustedDistance &lt; distances.get(neighbor)) {</span>
+<span class="fc" id="L47">                    System.out.println(&quot;Graph contains negative weight cycle&quot;);</span>
+<span class="fc" id="L48">                    return null;</span>
+                }
+<span class="fc" id="L50">            }</span>
+<span class="fc" id="L51">        }</span>
+
+<span class="fc" id="L53">        return reconstructPath(predecessors);</span>
+    }
+
+    public PathResult reconstructPath(Map&lt;Node, Node&gt; predecessors) {
+<span class="fc" id="L57">        List&lt;Node&gt; path = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L58">        Node current = endNode;</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        while (current != null) {</span>
+<span class="fc" id="L61">            path.add(current);</span>
+<span class="fc" id="L62">            current = predecessors.get(current);</span>
+        }
+<span class="fc" id="L64">        Collections.reverse(path);</span>
+<span class="fc" id="L65">        return new PathResult(path);</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

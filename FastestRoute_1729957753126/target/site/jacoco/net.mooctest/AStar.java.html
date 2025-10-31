@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AStar.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">AStar.java</span></div><h1>AStar.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+public class AStar extends SearchAlgorithm {
+
+    public AStar(Graph graph, Node startNode, Node endNode, Vehicle vehicle,
+                 TrafficCondition trafficCondition, WeatherCondition weatherCondition, int currentTime) {
+<span class="fc" id="L9">        super(graph, startNode, endNode, vehicle, trafficCondition, weatherCondition, currentTime);</span>
+<span class="fc" id="L10">    }</span>
+
+    public double heuristic(Node node) {
+<span class="fc" id="L13">        double distanceToEnd = Math.abs(node.getNodeId() - endNode.getNodeId());</span>
+<span class="fc" id="L14">        double roadTypeFactor = 1.0;</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        if (node.getRoadType().equals(&quot;Highway&quot;)) {</span>
+<span class="fc" id="L16">            roadTypeFactor = 0.8; // Prioritize highways</span>
+        }
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if (node.isHighRiskArea()) {</span>
+<span class="fc" id="L19">            roadTypeFactor = 2.0; // Avoid high-risk areas</span>
+        }
+<span class="fc" id="L21">        return distanceToEnd * roadTypeFactor;</span>
+    }
+
+    @Override
+    public PathResult findPath() {
+<span class="fc" id="L26">        PriorityQueue&lt;PathNode&gt; pq = new PriorityQueue&lt;&gt;(Comparator.comparingDouble(PathNode::getEstimatedTotalDistance));</span>
+<span class="fc" id="L27">        Map&lt;Node, Double&gt; gScores = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L28">        Map&lt;Node, Double&gt; fScores = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L29">        Map&lt;Node, Node&gt; predecessors = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L30">        Map&lt;Node, Integer&gt; nodeVisitTimes = new HashMap&lt;&gt;(); // Node visit time</span>
+
+<span class="fc" id="L32">        gScores.put(startNode, 0.0);</span>
+<span class="fc" id="L33">        fScores.put(startNode, heuristic(startNode));</span>
+<span class="fc" id="L34">        pq.add(new PathNode(startNode, 0, fScores.get(startNode)));</span>
+<span class="fc" id="L35">        nodeVisitTimes.put(startNode, currentTime); // Record initial time</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        while (!pq.isEmpty()) {</span>
+<span class="fc" id="L38">            PathNode currentPathNode = pq.poll();</span>
+<span class="fc" id="L39">            Node currentNode = currentPathNode.getNode();</span>
+<span class="fc" id="L40">            int currentVisitTime = nodeVisitTimes.get(currentNode);</span>
+
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (currentNode.equals(endNode)) {</span>
+<span class="fc" id="L43">                return reconstructPath(predecessors);</span>
+            }
+
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            for (Edge edge : currentNode.getNeighbors()) {</span>
+<span class="fc" id="L47">                Node neighbor = edge.getNeighbor();</span>
+<span class="fc" id="L48">                double tentativeGScore = gScores.get(currentNode) + edge.getDistance();</span>
+
+<span class="fc" id="L50">                double adjustedDistance = trafficCondition.adjustWeight(tentativeGScore, neighbor.getNodeId());</span>
+<span class="fc" id="L51">                adjustedDistance = weatherCondition.adjustWeightForWeather(adjustedDistance, neighbor);</span>
+
+<span class="pc bpc" id="L53" title="2 of 4 branches missed.">                if (!vehicle.isEmergencyVehicle() &amp;&amp; !neighbor.isOpenAt(currentVisitTime)) {</span>
+<span class="nc" id="L54">                    continue;</span>
+                }
+
+<span class="pc bpc" id="L57" title="1 of 4 branches missed.">                if (neighbor.isHighRiskArea() &amp;&amp; !vehicle.isEmergencyVehicle()) {</span>
+<span class="fc" id="L58">                    continue; // Skip high-risk areas</span>
+                }
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">                if (vehicle.needsRefueling(adjustedDistance)) {</span>
+<span class="fc" id="L62">                    continue;</span>
+                }
+
+<span class="pc bpc" id="L65" title="3 of 4 branches missed.">                if (!gScores.containsKey(neighbor) || tentativeGScore &lt; gScores.get(neighbor)) {</span>
+<span class="fc" id="L66">                    gScores.put(neighbor, tentativeGScore);</span>
+<span class="fc" id="L67">                    double fScore = tentativeGScore + heuristic(neighbor);</span>
+<span class="fc" id="L68">                    fScores.put(neighbor, fScore);</span>
+<span class="fc" id="L69">                    predecessors.put(neighbor, currentNode);</span>
+<span class="fc" id="L70">                    nodeVisitTimes.put(neighbor, currentVisitTime + (int)adjustedDistance);</span>
+<span class="fc" id="L71">                    pq.add(new PathNode(neighbor, tentativeGScore, fScore));</span>
+                }
+<span class="fc" id="L73">            }</span>
+<span class="fc" id="L74">        }</span>
+
+<span class="fc" id="L76">        return null;</span>
+    }
+
+    public PathResult reconstructPath(Map&lt;Node, Node&gt; predecessors) {
+<span class="fc" id="L80">        List&lt;Node&gt; path = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L81">        Node current = endNode;</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        while (current != null) {</span>
+<span class="fc" id="L84">            path.add(current);</span>
+<span class="fc" id="L85">            current = predecessors.get(current);</span>
+        }
+<span class="fc" id="L87">        Collections.reverse(path);</span>
+<span class="fc" id="L88">        return new PathResult(path);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

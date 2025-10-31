@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Vehicle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">Vehicle.java</span></div><h1>Vehicle.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+public class Vehicle {
+    private String vehicleType; // e.g., &quot;Standard Vehicle&quot;, &quot;Heavy Vehicle&quot;
+    private double maxLoad; // Maximum load capacity
+    private boolean requiresTollFreeRoute; // Indicates if toll roads should be avoided
+    private double fuelCapacity; // Capacity of the fuel tank or battery
+    private double currentFuel; // Current fuel or battery level
+    private double fuelConsumptionPerKm; // Fuel/electricity consumption per kilometer
+    private double minFuelAtEnd; // Minimum remaining fuel level upon reaching the destination
+    private boolean emergencyVehicle; // Indicates if it is an emergency vehicle
+
+    public Vehicle(String vehicleType, double maxLoad, boolean requiresTollFreeRoute,
+                   double fuelCapacity, double currentFuel, double fuelConsumptionPerKm,
+<span class="fc" id="L15">                   double minFuelAtEnd, boolean emergencyVehicle) {</span>
+<span class="fc" id="L16">        this.vehicleType = vehicleType;</span>
+<span class="fc" id="L17">        this.maxLoad = maxLoad;</span>
+<span class="fc" id="L18">        this.requiresTollFreeRoute = requiresTollFreeRoute;</span>
+<span class="fc" id="L19">        this.fuelCapacity = fuelCapacity;</span>
+<span class="fc" id="L20">        this.currentFuel = currentFuel;</span>
+<span class="fc" id="L21">        this.fuelConsumptionPerKm = fuelConsumptionPerKm;</span>
+<span class="fc" id="L22">        this.minFuelAtEnd = minFuelAtEnd;</span>
+<span class="fc" id="L23">        this.emergencyVehicle = emergencyVehicle;</span>
+<span class="fc" id="L24">    }</span>
+
+    public String getVehicleType() {
+<span class="fc" id="L27">        return vehicleType;</span>
+    }
+
+    public double getMaxLoad() {
+<span class="fc" id="L31">        return maxLoad;</span>
+    }
+
+    public boolean requiresTollFreeRoute() {
+<span class="fc" id="L35">        return requiresTollFreeRoute;</span>
+    }
+
+    public double getFuelCapacity() {
+<span class="fc" id="L39">        return fuelCapacity;</span>
+    }
+
+    public double getCurrentFuel() {
+<span class="fc" id="L43">        return currentFuel;</span>
+    }
+
+    public double getFuelConsumptionPerKm() {
+<span class="nc" id="L47">        return fuelConsumptionPerKm;</span>
+    }
+
+    public double getMinFuelAtEnd() {
+<span class="nc" id="L51">        return minFuelAtEnd;</span>
+    }
+
+    public boolean isEmergencyVehicle() {
+<span class="fc" id="L55">        return emergencyVehicle;</span>
+    }
+
+    public void consumeFuel(double distance) {
+<span class="fc" id="L59">        this.currentFuel -= distance * fuelConsumptionPerKm;</span>
+<span class="fc" id="L60">    }</span>
+
+    public boolean needsRefueling(double distanceToEnd) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        return (currentFuel - distanceToEnd * fuelConsumptionPerKm) &lt; minFuelAtEnd;</span>
+    }
+
+    public void refuel(double amount) {
+<span class="fc" id="L67">        this.currentFuel = Math.min(fuelCapacity, this.currentFuel + amount);</span>
+<span class="fc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
