@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SearchService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MementoX</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">SearchService.java</span></div><h1>SearchService.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+<span class="fc" id="L5">public class SearchService {</span>
+    public List&lt;Note&gt; searchByLabel(User user, Label label) {
+<span class="fc" id="L7">        List&lt;Note&gt; res = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L8" title="All 2 branches covered.">        for (Note note : user.getNotes()) {</span>
+<span class="fc bfc" id="L9" title="All 2 branches covered.">            if (note.getLabels().contains(label)) {</span>
+<span class="fc" id="L10">                res.add(note);</span>
+            }
+<span class="fc" id="L12">        }</span>
+<span class="fc" id="L13">        return res;</span>
+    }
+
+    public List&lt;Note&gt; searchByKeyword(User user, String keyword) {
+<span class="fc" id="L17">        List&lt;Note&gt; res = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L18" title="All 2 branches covered.">        if(keyword == null) return res;</span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        for (Note note : user.getNotes()) {</span>
+<span class="fc bfc" id="L20" title="All 2 branches covered.">            if(note.getContent().contains(keyword)) {</span>
+<span class="fc" id="L21">                res.add(note);</span>
+            }
+<span class="fc" id="L23">        }</span>
+<span class="fc" id="L24">        return res;</span>
+    }
+
+    public List&lt;Note&gt; searchByKeywordAllUsers(Collection&lt;User&gt; users, String keyword) {
+<span class="fc" id="L28">        List&lt;Note&gt; res = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if(keyword == null) return res;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (User user : users) {</span>
+<span class="fc" id="L31">            res.addAll(searchByKeyword(user, keyword));</span>
+<span class="fc" id="L32">        }</span>
+<span class="fc" id="L33">        return res;</span>
+    }
+
+    // merged from AdvancedSearchService
+    public List&lt;Note&gt; fuzzySearch(User user, String keyword) {
+<span class="fc" id="L38">        List&lt;Note&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L39" title="All 4 branches covered.">        if (keyword == null || keyword.isEmpty()) return result;</span>
+<span class="fc" id="L40">        String lower = keyword.toLowerCase();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (Note note : user.getNotes()) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (note.getContent().toLowerCase().contains(lower)) {</span>
+<span class="fc" id="L43">                result.add(note);</span>
+            }
+<span class="fc" id="L45">        }</span>
+<span class="fc" id="L46">        return result;</span>
+    }
+
+    public String highlight(String content, String keyword) {
+<span class="fc bfc" id="L50" title="All 4 branches covered.">        if (content == null || keyword == null) return content;</span>
+<span class="fc" id="L51">        return content.replaceAll(&quot;(?i)&quot; + java.util.regex.Pattern.quote(keyword), &quot;[[$0]]&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

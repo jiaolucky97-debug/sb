@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NoteDiffUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MementoX</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">NoteDiffUtil.java</span></div><h1>NoteDiffUtil.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+<span class="nc" id="L5">public class NoteDiffUtil {</span>
+    public static String diff(String oldContent, String newContent) {
+<span class="fc bfc" id="L7" title="All 2 branches covered.">        if(oldContent == null) oldContent = &quot;&quot;;</span>
+<span class="fc bfc" id="L8" title="All 2 branches covered.">        if(newContent == null) newContent = &quot;&quot;;</span>
+<span class="fc" id="L9">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L10">        String[] oldLines = oldContent.split(&quot;\\r?\\n&quot;);</span>
+<span class="fc" id="L11">        String[] newLines = newContent.split(&quot;\\r?\\n&quot;);</span>
+<span class="fc" id="L12">        int max = Math.max(oldLines.length, newLines.length);</span>
+<span class="fc bfc" id="L13" title="All 2 branches covered.">        for(int i=0; i&lt;max; i++) {</span>
+<span class="fc bfc" id="L14" title="All 2 branches covered.">            String oldLine = i&lt;oldLines.length ? oldLines[i] : &quot;&quot;;</span>
+<span class="pc bpc" id="L15" title="1 of 2 branches missed.">            String newLine = i&lt;newLines.length ? newLines[i] : &quot;&quot;;</span>
+<span class="fc bfc" id="L16" title="All 2 branches covered.">            if(!oldLine.equals(newLine)) {</span>
+<span class="fc" id="L17">                sb.append(&quot;- &quot;).append(oldLine).append(&quot;\n&quot;);</span>
+<span class="fc" id="L18">                sb.append(&quot;+ &quot;).append(newLine).append(&quot;\n&quot;);</span>
+            } else {
+<span class="fc" id="L20">                sb.append(&quot;  &quot;).append(oldLine).append(&quot;\n&quot;);</span>
+            }
+        }
+<span class="fc" id="L23">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

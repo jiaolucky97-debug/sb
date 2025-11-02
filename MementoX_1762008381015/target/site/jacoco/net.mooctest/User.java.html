@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>User.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MementoX</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">User.java</span></div><h1>User.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+public class User {
+    private final String name;
+<span class="fc" id="L7">    private final List&lt;Note&gt; notes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L8">    private final Map&lt;Note, HistoryManager&gt; notesHistory = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L10">    public User(String name) {</span>
+<span class="fc bfc" id="L11" title="All 4 branches covered.">        if (name == null || name.trim().isEmpty()) throw new IllegalArgumentException(&quot;Username can't be null or empty&quot;);</span>
+<span class="fc" id="L12">        this.name = name.trim();</span>
+<span class="fc" id="L13">    }</span>
+
+    public String getName() {
+<span class="fc" id="L16">        return name;</span>
+    }
+
+    public List&lt;Note&gt; getNotes() {
+<span class="fc" id="L20">        return new ArrayList&lt;&gt;(notes);</span>
+    }
+
+    public void addNote(Note note) {
+<span class="fc bfc" id="L24" title="All 4 branches covered.">        if (note != null &amp;&amp; !notes.contains(note)) {</span>
+<span class="fc" id="L25">            notes.add(note);</span>
+<span class="fc" id="L26">            notesHistory.put(note, new HistoryManager(note));</span>
+        }
+<span class="fc" id="L28">    }</span>
+
+    public void removeNote(Note note) {
+<span class="fc" id="L31">        notes.remove(note);</span>
+<span class="fc" id="L32">        notesHistory.remove(note);</span>
+<span class="fc" id="L33">    }</span>
+
+    public HistoryManager getHistoryManager(Note note) {
+<span class="fc" id="L36">        return notesHistory.get(note);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
