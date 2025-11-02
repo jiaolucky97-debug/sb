@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HistoryManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MementoX</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">HistoryManager.java</span></div><h1>HistoryManager.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.*;
+
+public class HistoryManager {
+    private final Originator originator;
+<span class="fc" id="L7">    private final Map&lt;String, List&lt;Memento&gt;&gt; branches = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L8">    private String currentBranch = &quot;main&quot;;</span>
+<span class="fc" id="L9">    private int currentIndex = -1;</span>
+
+<span class="fc" id="L11">    public HistoryManager(Originator originator) {</span>
+<span class="fc" id="L12">        this.originator = originator;</span>
+<span class="fc" id="L13">        branches.put(currentBranch, new ArrayList&lt;&gt;());</span>
+<span class="fc" id="L14">        save();</span>
+<span class="fc" id="L15">    }</span>
+
+    // Linear history API (backward compatible)
+    public void save() {
+<span class="fc" id="L19">        List&lt;Memento&gt; list = branches.get(currentBranch);</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        while (list.size() &gt; currentIndex + 1) list.remove(list.size() - 1);</span>
+<span class="fc" id="L21">        list.add(originator.createMemento());</span>
+<span class="fc" id="L22">        currentIndex = list.size() - 1;</span>
+<span class="fc" id="L23">    }</span>
+
+    public void undo() throws MementoException {
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        if (currentIndex &lt;= 0) throw new MementoException(&quot;Cannot undo, no previous state available.&quot;);</span>
+<span class="fc" id="L27">        currentIndex--;</span>
+<span class="fc" id="L28">        originator.restoreMemento(branches.get(currentBranch).get(currentIndex));</span>
+<span class="fc" id="L29">    }</span>
+
+    public void redo() throws MementoException {
+<span class="fc" id="L32">        List&lt;Memento&gt; list = branches.get(currentBranch);</span>
+<span class="pc bpc" id="L33" title="1 of 2 branches missed.">        if (currentIndex &gt;= list.size() - 1) throw new MementoException(&quot;Cannot redo, no next state available.&quot;);</span>
+<span class="fc" id="L34">        currentIndex++;</span>
+<span class="fc" id="L35">        originator.restoreMemento(list.get(currentIndex));</span>
+<span class="fc" id="L36">    }</span>
+
+    public List&lt;Memento&gt; getHistory() {
+<span class="fc" id="L39">        return new ArrayList&lt;&gt;(branches.get(currentBranch));</span>
+    }
+
+    public void clearHistory() {
+<span class="nc" id="L43">        branches.get(currentBranch).clear();</span>
+<span class="nc" id="L44">        currentIndex = -1;</span>
+<span class="nc" id="L45">    }</span>
+
+    public void createBranch(String name) {
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        if (!branches.containsKey(name)) {</span>
+<span class="nc" id="L49">            branches.put(name, new ArrayList&lt;&gt;());</span>
+        }
+<span class="nc" id="L51">    }</span>
+
+    public void switchBranch(String name) throws MementoException {
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (!branches.containsKey(name)) throw new MementoException(&quot;Branch not found: &quot; + name);</span>
+<span class="nc" id="L55">        currentBranch = name;</span>
+<span class="nc" id="L56">        currentIndex = branches.get(name).size() - 1;</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (currentIndex &gt;= 0) {</span>
+<span class="nc" id="L58">            originator.restoreMemento(branches.get(currentBranch).get(currentIndex));</span>
+        }
+<span class="nc" id="L60">    }</span>
+
+<span class="fc" id="L62">    public String getCurrentBranch() { return currentBranch; }</span>
+
+<span class="nc" id="L64">    public List&lt;String&gt; getAllBranches() { return new ArrayList&lt;&gt;(branches.keySet()); }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>

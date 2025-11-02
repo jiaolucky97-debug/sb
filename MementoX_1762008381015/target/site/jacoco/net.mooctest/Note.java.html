@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Note.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">MementoX</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">Note.java</span></div><h1>Note.java</h1><pre class="source lang-java linenums">package net.mooctest;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Note implements Originator {
+    private String content;
+<span class="fc" id="L8">    private final Set&lt;Label&gt; labels = new HashSet&lt;&gt;();</span>
+
+<span class="fc" id="L10">    public Note(String content) {</span>
+<span class="fc bfc" id="L11" title="All 2 branches covered.">        this.content = content == null ? &quot;&quot; : content;</span>
+<span class="fc" id="L12">    }</span>
+
+    public String getContent() {
+<span class="fc" id="L15">        return content;</span>
+    }
+    
+    public void setContent(String content) {
+<span class="fc bfc" id="L19" title="All 2 branches covered.">        this.content = content == null ? &quot;&quot; : content;</span>
+<span class="fc" id="L20">    }</span>
+    
+    public Set&lt;Label&gt; getLabels() {
+<span class="fc" id="L23">        return new HashSet&lt;&gt;(labels);</span>
+    }
+
+    public void addLabel(Label label) {
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        if (label != null) labels.add(label);</span>
+<span class="fc" id="L28">    }</span>
+
+    public void removeLabel(Label label) {
+<span class="fc" id="L31">        labels.remove(label);</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    public Memento createMemento() {
+<span class="fc" id="L36">        return new NoteMemento(content);</span>
+    }
+
+    @Override
+    public void restoreMemento(Memento memento) throws MementoException {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (!(memento instanceof NoteMemento)) {</span>
+<span class="fc" id="L42">            throw new MementoException(&quot;Wrong memento type for Note&quot;);</span>
+        }
+<span class="fc" id="L44">        this.content = ((NoteMemento) memento).getState();</span>
+<span class="fc" id="L45">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
