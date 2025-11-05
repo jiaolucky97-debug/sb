@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrafficCondition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FastestRoute</a> &gt; <a href="index.source.html" class="el_package">net.mooctest</a> &gt; <span class="el_source">TrafficCondition.java</span></div><h1>TrafficCondition.java</h1><pre class="source lang-java linenums">package net.mooctest;
+import java.util.Map;
+
+public class TrafficCondition {
+    private Map&lt;Integer, String&gt; trafficData; // Mapping from node ID to traffic conditions, such as &quot;Clear&quot;, &quot;Congested&quot;, &quot;Closed&quot;
+
+<span class="fc" id="L7">    public TrafficCondition(Map&lt;Integer, String&gt; trafficData) {</span>
+<span class="fc" id="L8">        this.trafficData = trafficData;</span>
+<span class="fc" id="L9">    }</span>
+
+    public String getTrafficStatus(int nodeId) {
+<span class="fc" id="L12">        return trafficData.getOrDefault(nodeId, &quot;Clear&quot;);</span>
+    }
+
+    public void updateTrafficStatus(int nodeId, String status) {
+<span class="fc" id="L16">        trafficData.put(nodeId, status);</span>
+<span class="fc" id="L17">    }</span>
+
+    public double adjustWeight(double originalWeight, int nodeId) {
+<span class="fc" id="L20">        String trafficStatus = getTrafficStatus(nodeId);</span>
+<span class="pc bpc" id="L21" title="1 of 5 branches missed.">        switch (trafficStatus) {</span>
+            case &quot;Clear&quot;:
+<span class="fc" id="L23">                return originalWeight;</span>
+            case &quot;Congested&quot;:
+<span class="fc" id="L25">                return originalWeight * 2; // Double weight in case of congestion</span>
+            case &quot;Closed&quot;:
+<span class="fc" id="L27">                return Double.MAX_VALUE; // Impassable if the road is closed</span>
+            case &quot;Accident&quot;:
+<span class="fc" id="L29">                return originalWeight * 3; // Increase weight if there’s an accident</span>
+            default:
+<span class="nc" id="L31">                return originalWeight;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
